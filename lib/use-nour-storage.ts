@@ -19,12 +19,16 @@ export function useNourStorage() {
   const [favorites, setFavorites] = useState<SavedFavorite[]>([])
   const [bookmarks, setBookmarks] = useState<SavedBookmark[]>([])
   const [stats, setStats] = useState<DailyStat[]>([])
+  const [khatmaPage, setKhatmaPage] = useState(1)
+  const [reminders, setReminders] = useState({ adhkar: true, prayer: true, time: '08:00' })
 
   useEffect(() => {
     setCounts(readJson('nour-counts', []))
     setFavorites(readJson('nour-favorites', []))
     setBookmarks(readJson('nour-bookmarks', []))
     setStats(readJson('nour-daily-stats', []))
+    setKhatmaPage(readJson('nour-khatma-page', 1))
+    setReminders(readJson('nour-reminders', { adhkar: true, prayer: true, time: '08:00' }))
     setReady(true)
   }, [])
 
@@ -35,7 +39,9 @@ export function useNourStorage() {
     localStorage.setItem('nour-bookmarks', JSON.stringify(bookmarks))
     localStorage.setItem('nour-daily-stats', JSON.stringify(stats))
     localStorage.setItem('nour-daily-count', String(stats.find((item) => item.date === today)?.count || 0))
-  }, [ready, counts, favorites, bookmarks, stats, today])
+    localStorage.setItem('nour-khatma-page', JSON.stringify(khatmaPage))
+    localStorage.setItem('nour-reminders', JSON.stringify(reminders))
+  }, [ready, counts, favorites, bookmarks, stats, khatmaPage, reminders, today])
 
   const increment = (index: number) => {
     setCounts((current) => {
@@ -48,5 +54,5 @@ export function useNourStorage() {
       : [...current, { date: today, count: 1 }])
   }
 
-  return { counts, favorites, setFavorites, bookmarks, setBookmarks, stats, increment, today, ready }
+  return { counts, favorites, setFavorites, bookmarks, setBookmarks, stats, increment, today, ready, khatmaPage, setKhatmaPage, reminders, setReminders }
 }

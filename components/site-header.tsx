@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 const links = [
-  ['/', 'الرئيسية'], ['/memory', 'أثرٌ لا يغيب'], ['/quran', 'القرآن'], ['/adhkar', 'الأذكار'], ['/duaa', 'الدعاء'], ['/library', 'مكتبتي'], ['/stats', 'الإحصائيات'], ['/search', 'بحث'],
+  ['/', 'الرئيسية'], ['/memory', 'أثرٌ لا يغيب'], ['/quran', 'القرآن'], ['/adhkar', 'الأذكار'], ['/duaa', 'الدعاء'], ['/khatma', 'الختمة'], ['/prayer', 'المواقيت'], ['/library', 'مكتبتي'], ['/stats', 'الإحصائيات'], ['/search', 'بحث'],
 ]
 
 const mobileLinks = [
