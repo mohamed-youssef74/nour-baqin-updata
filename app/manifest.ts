@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'نورٌ باقٍ | صدقة جارية',
     short_name: 'نورٌ باقٍ',
-    description: 'مساحة محبة وذكر ودعاء لروح جدتي الغالية.',
+    description: 'مساحة محبة وذكر ودعاء .',
     start_url: '/',
     display: 'standalone',
     background_color: '#f7f4ed',
