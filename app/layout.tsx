@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'نورٌ باقٍ | صدقة جارية',
-  description: 'مساحة محبة وذكر ودعاء لروح جدتي الغالية.',
+  description: 'اقرأ واستمع للقرآن الكريم والأذكار اليومية',
   generator: 'M.yossef74',
   icons: {
     icon: [
