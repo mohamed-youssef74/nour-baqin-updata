@@ -161,3 +161,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Nour dark mode: remaps the app's fixed palette */
+.dark body{background:#0c1512;color:#e6ece7}
+.dark .bg-\[\#f7f4ed\]{background-color:#0c1512!important}
+.dark .bg-white,.dark .bg-\[\#fffdf8\]{background-color:#15241f!important}
+.dark .bg-\[\#edf2eb\],.dark .bg-\[\#eef4ed\],.dark .bg-\[\#dce8dc\]{background-color:#1b2e28!important}
+.dark .bg-white\/60{background-color:rgba(255,255,255,.07)!important}
+.dark .bg-\[\#214b40\]{background-color:#10251f!important}
+.dark .text-\[\#183d35\],.dark .text-\[\#243a32\],.dark .text-\[\#385447\]{color:#e9efe9!important}
+.dark .text-\[\#557165\],.dark .text-\[\#718878\]{color:#a9bdb0!important}
+.dark .border-\[\#d7e3d7\],.dark .border-\[\#e2e9df\],.dark .border-\[\#c8d8c9\],.dark .border-\[\#dce5dc\],.dark .border-\[\#b9cdbb\]{border-color:#2a4038!important}
+.dark .bg-\[\#d8b66c\],.dark .bg-\[\#d8b66c\] *{color:#183d35!important}
+.dark .bg-\[\#183d35\]{background-color:#0f2a23!important}
+.dark .bg-\[\#183d35\].text-\[\#183d35\]{color:#f7f4ed!important}
+.dark input,.dark select,.dark textarea{background-color:#1b2e28!important;color:#e9efe9!important}
+.dark input::placeholder{color:#7f948a}
