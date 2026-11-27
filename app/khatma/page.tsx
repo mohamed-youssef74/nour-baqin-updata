@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { BookOpen, Minus, Plus, RotateCcw } from 'lucide-react'
 import { PageShell } from '@/components/site-header'
 import { useNourStorage } from '@/lib/use-nour-storage'
+import { pushSupported, refreshPush, sendTestPush, stopPush, syncPush } from '@/lib/push-client'
 
 export default function KhatmaPage() {
   const { khatmaPage, setKhatmaPage } = useNourStorage()
@@ -21,9 +22,16 @@ export default function KhatmaPage() {
   useEffect(() => { if (wirdReady) localStorage.setItem('nour-wird', JSON.stringify(wird)) }, [wird, wirdReady])
   const [rem, setRem] = useState({ enabled: false, time: '20:00', notified: '' })
   useEffect(() => { try { const r = JSON.parse(localStorage.getItem('nour-wird-reminder') || 'null'); if (r) setRem(r) } catch {} }, [])
+  const [pushState, setPushState] = useState('')
+  const doneNow = Math.max(0, khatmaPage - wird.start) >= wird.goal
+  // Keep the server in sync (time, and whether today's wird is finished) whenever the app is open.
+  useEffect(() => { if (wirdReady && rem.enabled) refreshPush(rem.time, doneNow).catch(() => undefined) }, [wirdReady, rem.enabled, rem.time, doneNow])
   const saveRem = async (next: typeof rem) => {
     if (next.enabled && !rem.enabled && typeof Notification !== 'undefined' && Notification.permission === 'default') await Notification.requestPermission().catch(() => undefined)
     setRem(next); localStorage.setItem('nour-wird-reminder', JSON.stringify(next))
+    if (!next.enabled) { stopPush().catch(() => undefined); setPushState(''); return }
+    if (!pushSupported() || Notification.permission !== 'granted') { setPushState(Notification.permission === 'denied' ? 'denied' : 'unsupported'); return }
+    try { setPushState((await syncPush(next.time, doneNow)) ? 'on' : 'error') } catch { setPushState('error') }
   }
   const done = Math.max(0, khatmaPage - wird.start)
   const wirdPct = Math.min(100, Math.round((done / wird.goal) * 100))
@@ -47,7 +55,7 @@ export default function KhatmaPage() {
         <div className="mt-5 h-3 overflow-hidden rounded-full bg-[#dce8dc]"><div className="h-full rounded-full bg-[#183d35] transition-all" style={{ width: `${wirdPct}%` }} /></div>
         <p className="mt-3 text-sm text-[#557165]">قرأت اليوم {done} من {wird.goal} صفحات {done >= wird.goal ? '— ما شاء الله، أتممت وردك' : ''}</p>
         <p className="mt-1 text-sm text-[#557165]">بهذا الورد تختم القرآن خلال {daysLeft} يومًا تقريبًا.</p>
-        <div className="mt-6 border-t border-[#d8b66c]/40 pt-5"><label className="flex cursor-pointer items-center justify-center gap-3 font-bold"><input type="checkbox" checked={rem.enabled} onChange={(e) => saveRem({ ...rem, enabled: e.target.checked })} className="size-5 accent-[#183d35]" />تذكير بالورد اليومي</label>{rem.enabled && <label className="mt-3 block text-sm">وقت التذكير <input type="time" value={rem.time} onChange={(e) => saveRem({ ...rem, time: e.target.value })} className="mr-2 rounded-xl border border-[#d8b66c] px-3 py-1" /></label>}<p className="mt-2 text-xs text-[#718878]">يظهر التذكير والتطبيق مفتوح، إن لم تكن قرأت وردك بعد.</p></div>
+        <div className="mt-6 border-t border-[#d8b66c]/40 pt-5"><label className="flex cursor-pointer items-center justify-center gap-3 font-bold"><input type="checkbox" checked={rem.enabled} onChange={(e) => saveRem({ ...rem, enabled: e.target.checked })} className="size-5 accent-[#183d35]" />تذكير بالورد اليومي</label>{rem.enabled && <label className="mt-3 block text-sm">وقت التذكير <input type="time" value={rem.time} onChange={(e) => saveRem({ ...rem, time: e.target.value })} className="mr-2 rounded-xl border border-[#d8b66c] px-3 py-1" /></label>}<p className="mt-2 text-xs text-[#718878]">{pushState === 'on' ? 'التذكير يصل حتى والتطبيق مغلق، إن لم تكن قرأت وردك بعد.' : pushState === 'denied' ? 'الإشعارات محظورة من إعدادات المتصفح، فعّلها ثم أعد المحاولة.' : pushState === 'unsupported' ? 'هذا المتصفح لا يدعم التنبيهات خارج التطبيق، سيظهر التذكير والتطبيق مفتوح.' : pushState === 'error' ? 'تعذر تفعيل التنبيه خارج التطبيق الآن، سيظهر التذكير والتطبيق مفتوح.' : 'يظهر التذكير والتطبيق مفتوح، إن لم تكن قرأت وردك بعد.'}</p>{rem.enabled && pushState === 'on' && <button onClick={async () => setPushState((await sendTestPush()) ? 'on' : 'error')} className="mt-2 rounded-full border border-[#d8b66c] px-4 py-1 text-xs font-bold">جرّب التنبيه الآن</button>}</div>
       </div>
     </section>
   </PageShell>
