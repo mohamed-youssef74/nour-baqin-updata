@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { LoaderCircle, Search as SearchIcon } from 'lucide-react'
 import { PageShell } from '@/components/site-header'
+import { loadQuran } from '@/lib/quran-data'
 import { dhikrItems, morningAdhkar, eveningAdhkar, duaaItems } from '@/lib/content'
 
+const norm = (t: string) => t.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '').replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627').replace(/\u0649/g, '\u064A').replace(/\u0629/g, '\u0647')
+
 type SearchResult = { text: string; category: string; href: string }
-type QuranResult = { text: string; surah: string; ayah: number }
+type QuranResult = { text: string; surah: string; surahNumber: number; ayah: number }
 
 const localResults: SearchResult[] = [
   ...dhikrItems.map((text) => ({ text, category: 'أذكار', href: '/adhkar' })),
@@ -30,12 +33,11 @@ export default function SearchPage() {
     if (!normalizedQuery) return
     setLoading(true)
     try {
-      const response = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani')
-      const payload = await response.json()
-      const matches = payload.data.surahs.flatMap((surah: { name: string; ayahs: { numberInSurah: number; text: string }[] }) =>
+      const surahs = await loadQuran()
+      const matches = surahs.flatMap((surah) =>
         surah.ayahs
-          .filter((ayah) => ayah.text.includes(normalizedQuery))
-          .map((ayah) => ({ text: ayah.text, surah: surah.name, ayah: ayah.numberInSurah })),
+          .filter((ayah) => norm(ayah.text).includes(norm(normalizedQuery)))
+          .map((ayah) => ({ text: ayah.text, surah: surah.name, surahNumber: surah.number, ayah: ayah.numberInSurah })),
       )
       setQuranResults(matches.slice(0, 20))
     } catch {
@@ -62,7 +64,7 @@ export default function SearchPage() {
           {!results.length && <p className="rounded-2xl bg-white p-5 text-sm text-[#718878]">لا توجد نتائج مطابقة.</p>}
         </ResultGroup>
         <ResultGroup title="القرآن الكريم" count={quranResults.length}>
-          {quranResults.map((item) => <Link key={`${item.surah}-${item.ayah}`} href={`/quran?surah=${item.surah}`} className="block rounded-2xl border border-[#e2e9df] bg-white p-4 transition hover:border-[#d8b66c] hover:shadow-sm"><span className="text-xs font-bold text-[#a5823d]">سورة {item.surah} — آية {item.ayah}</span><p className="mt-2 font-serif text-lg leading-9">{item.text}</p></Link>)}
+          {quranResults.map((item) => <Link key={`${item.surah}-${item.ayah}`} href={`/quran?surah=${item.surahNumber}&ayah=${item.ayah}`} className="block rounded-2xl border border-[#e2e9df] bg-white p-4 transition hover:border-[#d8b66c] hover:shadow-sm"><span className="text-xs font-bold text-[#a5823d]">{item.surah} — آية {item.ayah}</span><p className="mt-2 font-serif text-lg leading-9">{item.text}</p></Link>)}
           {!quranResults.length && <p className="rounded-2xl bg-white p-5 text-sm text-[#718878]">اضغط «بحث في القرآن» لعرض النتائج.</p>}
         </ResultGroup>
       </div>}
