@@ -1,6 +1,9 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Amiri_Quran } from 'next/font/google'
 import './globals.css'
+
+const quranFont = Amiri_Quran({ subsets: ['arabic'], weight: '400', variable: '--font-quran', display: 'swap' })
 
 export const metadata: Metadata = {
   title: 'نورٌ باقٍ | صدقة جارية',
@@ -39,8 +42,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className="antialiased">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: "try{if(localStorage.getItem('nour-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}" }} /></head>
+      <body className={`antialiased ${quranFont.variable}`}>
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

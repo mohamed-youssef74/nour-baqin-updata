@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, ChartNoAxesColumn, Heart, Home, Menu, Sparkles, X } from 'lucide-react'
+import { Moon, Sun, BookOpen, ChartNoAxesColumn, Heart, Home, Menu, Sparkles, X } from 'lucide-react'
+import { WirdReminder } from '@/components/wird-reminder'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 const links = [
-  ['/', 'الرئيسية'], ['/memory', 'أثرٌ لا يغيب'], ['/quran', 'القرآن'], ['/adhkar', 'الأذكار'], ['/duaa', 'الدعاء'], ['/khatma', 'الختمة'], ['/prayer', 'المواقيت'], ['/library', 'مكتبتي'], ['/stats', 'الإحصائيات'], ['/search', 'بحث'],
+  ['/', 'الرئيسية'], ['/memory', 'أثرٌ لا يغيب'], ['/quran', 'القرآن'], ['/adhkar', 'الأذكار'], ['/duaa', 'الدعاء'], ['/khatma', 'الختمة'], ['/stories', 'قصص الأنبياء'], ['/prayer', 'المواقيت'], ['/library', 'مكتبتي'], ['/stats', 'الإحصائيات'], ['/search', 'بحث'],
 ]
 
 const mobileLinks = [
@@ -24,6 +25,14 @@ export function SiteHeader() {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalled, setIsInstalled] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  const [dark, setDark] = useState(false)
+  useEffect(() => { setDark(document.documentElement.classList.contains('dark')) }, [])
+  const toggleDark = () => {
+    const next = !dark
+    setDark(next)
+    document.documentElement.classList.toggle('dark', next)
+    try { localStorage.setItem('nour-theme', next ? 'dark' : 'light') } catch {}
+  }
   const closeMenu = () => setOpen(false)
 
   useEffect(() => {
@@ -67,6 +76,7 @@ export function SiteHeader() {
       </Link>
       <nav className="hidden items-center gap-5 text-sm md:flex" aria-label="التنقل الرئيسي">{links.map(([href, label]) => <Link key={href} href={href} aria-current={pathname === href ? 'page' : undefined} className={`rounded-full px-3 py-2 transition hover:text-[#e8c878] ${pathname === href ? 'bg-white/10 text-[#e8c878]' : ''}`}>{label}</Link>)}</nav>
       <div className="flex items-center gap-2">
+        <button onClick={toggleDark} className="rounded-full border border-[#d8b66c]/50 p-2 text-[#e8c878] transition hover:bg-white/10" aria-label={dark ? 'الوضع النهاري' : 'الوضع الليلي'} title={dark ? 'الوضع النهاري' : 'الوضع الليلي'}>{dark ? <Sun className="size-4" aria-hidden="true" /> : <Moon className="size-4" aria-hidden="true" />}</button>
         {canInstall && <button onClick={installApp} className="hidden rounded-full border border-[#d8b66c]/50 px-3 py-2 text-xs text-[#e8c878] transition hover:bg-white/10 sm:block">تثبيت التطبيق</button>}
         <button className="rounded-full p-2 md:hidden" aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'} aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button>
       </div>
@@ -79,5 +89,4 @@ export function SiteHeader() {
   </header>
 }
 
-export function PageShell({ children, title }: { children: React.ReactNode; title?: string }) { return <main dir="rtl" className="min-h-screen bg-[#f7f4ed] pb-20 text-[#243a32] md:pb-0"><SiteHeader />{title && <div className="bg-[#214b40] px-6 py-10 text-center text-[#f7f4ed] sm:py-12"><h1 className="font-serif text-3xl font-bold sm:text-4xl">{title}</h1></div>}{children}</main> }
-
+export function PageShell({ children, title }: { children: React.ReactNode; title?: string }) { return <main dir="rtl" className="min-h-screen bg-[#f7f4ed] pb-20 text-[#243a32] md:pb-0"><WirdReminder /><SiteHeader />{title && <div className="bg-[#214b40] px-6 py-10 text-center text-[#f7f4ed] sm:py-12"><h1 className="font-serif text-3xl font-bold sm:text-4xl">{title}</h1></div>}{children}</main> }
