@@ -62,6 +62,6 @@ export async function savedAudioBlobUrl(url: string) {
 let tafsirCache: Promise<string[][]> | null = null
 // Tafsir al-Muyassar (King Fahd Complex), bundled for offline use.
 export function loadTafsir(): Promise<string[][]> {
-  if (!tafsirCache) tafsirCache = fetch('/tafsir.json').then((r) => { if (!r.ok) throw new Error('tafsir'); return r.json() }).catch((e) => { tafsirCache = null; throw e })
+  if (!tafsirCache) tafsirCache = fetch('/3-tafsir-data.json').then((r) => { if (!r.ok) throw new Error('tafsir'); return r.json() }).catch((e) => { tafsirCache = null; throw e })
   return tafsirCache
 }
