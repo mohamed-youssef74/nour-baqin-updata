@@ -1,7 +1,7 @@
 const VERSION = 'v2'
 const SHELL = 'nour-shell-' + VERSION
 const RUNTIME = 'nour-runtime-' + VERSION
-const PAGES = ['/', '/quran', '/adhkar', '/duaa', '/khatma', '/prayer', '/library', '/stats', '/search', '/memory', '/quran.json', '/tafsir.json', '/stories', '/icon.svg', '/icon-light-32x32.png', '/apple-icon.png']
+const PAGES = ['/', '/quran', '/adhkar', '/duaa', '/khatma', '/prayer', '/library', '/stats', '/search', '/memory', '/quran.json', '/3-tafsir-data.json', '/stories', '/icon.svg', '/icon-light-32x32.png', '/apple-icon.png']
 
 async function precache() {
   const cache = await caches.open(SHELL)
@@ -52,7 +52,7 @@ self.addEventListener('fetch', (event) => {
   }
   if (url.origin !== self.location.origin) return // audio and other cross-origin: not intercepted
   if (req.headers.has('range')) return
-  if (url.pathname === '/quran.json' || url.pathname === '/tafsir.json' || url.pathname.startsWith('/_next/static/')) {
+  if (url.pathname === '/quran.json' || url.pathname === '/3-tafsir-data.json' || url.pathname.startsWith('/_next/static/')) {
     event.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => { if (res.ok) { const c = res.clone(); caches.open(RUNTIME).then((ca) => ca.put(req, c)) } return res })))
     return
   }
