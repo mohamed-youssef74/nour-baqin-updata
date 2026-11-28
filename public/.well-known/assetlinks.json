@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.nourbaqin.app",
+    "sha256_cert_fingerprints": ["7B:7D:CA:CF:2F:FB:11:D4:75:54:AD:9D:B1:80:69:BF:47:74:92:8A:42:4E:06:2C:9B:F4:B2:6A:59:FA:B5:8A"]
+  }
+}]
