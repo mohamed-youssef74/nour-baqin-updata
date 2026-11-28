@@ -4,34 +4,36 @@ import { useEffect, useState } from 'react'
 import { BookOpen, Minus, Plus, RotateCcw } from 'lucide-react'
 import { PageShell } from '@/components/site-header'
 import { useNourStorage } from '@/lib/use-nour-storage'
-import { pushSupported, refreshPush, sendTestPush, stopPush, syncPush } from '@/lib/push-client'
+import { disablePush, localDate, pushSupported, refreshPush, sendTestPush, syncPush } from '@/lib/push-client'
 
 export default function KhatmaPage() {
-  const { khatmaPage, setKhatmaPage } = useNourStorage()
+  const { khatmaPage, setKhatmaPage, ready } = useNourStorage()
   const [wird, setWird] = useState({ date: '', start: 1, goal: 5 })
   const [wirdReady, setWirdReady] = useState(false)
-  const todayKey = new Date().toISOString().slice(0, 10)
+  const todayKey = localDate()
+  // Wait for the saved page to load first, otherwise a new day's wird would start at page 1 and look finished.
   useEffect(() => {
+    if (!ready || wirdReady) return
     try {
       const saved = JSON.parse(localStorage.getItem('nour-wird') || 'null')
       setWird(saved && saved.date === todayKey ? saved : { date: todayKey, start: khatmaPage, goal: saved?.goal || 5 })
     } catch { setWird({ date: todayKey, start: khatmaPage, goal: 5 }) }
     setWirdReady(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [ready])
   useEffect(() => { if (wirdReady) localStorage.setItem('nour-wird', JSON.stringify(wird)) }, [wird, wirdReady])
   const [rem, setRem] = useState({ enabled: false, time: '20:00', notified: '' })
   useEffect(() => { try { const r = JSON.parse(localStorage.getItem('nour-wird-reminder') || 'null'); if (r) setRem(r) } catch {} }, [])
   const [pushState, setPushState] = useState('')
-  const doneNow = Math.max(0, khatmaPage - wird.start) >= wird.goal
+  const doneNow = wirdReady && wird.date === todayKey && Math.max(0, khatmaPage - wird.start) >= wird.goal
   // Keep the server in sync (time, and whether today's wird is finished) whenever the app is open.
-  useEffect(() => { if (wirdReady && rem.enabled) refreshPush(rem.time, doneNow).catch(() => undefined) }, [wirdReady, rem.enabled, rem.time, doneNow])
+  useEffect(() => { if (wirdReady && rem.enabled) refreshPush({ wird: { on: true, time: rem.time, done: doneNow } }).catch(() => undefined) }, [wirdReady, rem.enabled, rem.time, doneNow])
   const saveRem = async (next: typeof rem) => {
     if (next.enabled && !rem.enabled && typeof Notification !== 'undefined' && Notification.permission === 'default') await Notification.requestPermission().catch(() => undefined)
     setRem(next); localStorage.setItem('nour-wird-reminder', JSON.stringify(next))
-    if (!next.enabled) { stopPush().catch(() => undefined); setPushState(''); return }
+    if (!next.enabled) { disablePush({ wird: { on: false } }).catch(() => undefined); setPushState(''); return }
     if (!pushSupported() || Notification.permission !== 'granted') { setPushState(Notification.permission === 'denied' ? 'denied' : 'unsupported'); return }
-    try { setPushState((await syncPush(next.time, doneNow)) ? 'on' : 'error') } catch { setPushState('error') }
+    try { setPushState((await syncPush({ wird: { on: true, time: next.time, done: doneNow } })) ? 'on' : 'error') } catch { setPushState('error') }
   }
   const done = Math.max(0, khatmaPage - wird.start)
   const wirdPct = Math.min(100, Math.round((done / wird.goal) * 100))
