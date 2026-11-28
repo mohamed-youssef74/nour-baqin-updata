@@ -1,4 +1,4 @@
-const VERSION = 'v2'
+const VERSION = 'v3'
 const SHELL = 'nour-shell-' + VERSION
 const RUNTIME = 'nour-runtime-' + VERSION
 const PAGES = ['/', '/quran', '/adhkar', '/duaa', '/khatma', '/prayer', '/library', '/stats', '/search', '/memory', '/quran.json', '/3-tafsir-data.json', '/stories', '/icon.svg', '/icon-light-32x32.png', '/apple-icon.png']
@@ -73,7 +73,7 @@ self.addEventListener('push', (event) => {
     badge: '/icon-light-32x32.png',
     dir: 'rtl',
     lang: 'ar',
-    tag: 'nour-wird',
+    tag: data.tag || 'nour-wird',
     data: { url: data.url || '/quran' },
   }))
 })
