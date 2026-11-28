@@ -22,28 +22,41 @@ async function currentSub(create: boolean) {
   return sub
 }
 
-// Subscribe (if needed) and tell the server the reminder time and whether today's wird is done.
-export async function syncPush(time: string, done: boolean) {
+export type PushPatch = {
+  wird?: { on: boolean; time?: string; done?: boolean }
+  prayer?: { on: boolean }
+  adhkar?: { on: boolean; time?: string }
+}
+const toBody = (sub: PushSubscription, p: PushPatch) => ({
+  subscription: sub.toJSON(),
+  tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo',
+  ...(p.wird ? { wird: { on: p.wird.on, time: p.wird.time, ...(p.wird.done === undefined ? {} : { doneDate: p.wird.done ? localDate() : '' }) } } : {}),
+  ...(p.prayer ? { prayer: p.prayer } : {}),
+  ...(p.adhkar ? { adhkar: p.adhkar } : {}),
+})
+const post = (sub: PushSubscription, p: PushPatch) => fetch('/api/push/subscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(toBody(sub, p)) })
+
+// Subscribe (if needed) and tell the server what to remind about (only the parts given change).
+export async function syncPush(p: PushPatch) {
   const sub = await currentSub(true)
   if (!sub) return false
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo'
-  const r = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), time, tz, doneDate: done ? localDate() : '' }) })
-  return r.ok
+  return (await post(sub, p)).ok
 }
 
 // Only update an existing subscription (no permission prompt). Used when the app opens.
-export async function refreshPush(time: string, done: boolean) {
+export async function refreshPush(p: PushPatch) {
   if (!pushSupported() || Notification.permission !== 'granted') return
   const sub = await currentSub(false)
-  if (sub) await syncPush(time, done)
+  if (sub) await post(sub, p)
 }
 
-export async function stopPush() {
+// Turn some reminders off. When the server has nothing left for this device, drop the subscription too.
+export async function disablePush(p: PushPatch) {
   if (!pushSupported()) return
   const sub = await currentSub(false)
   if (!sub) return
-  await fetch('/api/push/subscribe', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => undefined)
-  await sub.unsubscribe().catch(() => undefined)
+  const j = await post(sub, p).then((r) => r.json()).catch(() => null)
+  if (j && j.active === false) await sub.unsubscribe().catch(() => undefined)
 }
 
 export async function sendTestPush() {
