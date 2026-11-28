@@ -119,9 +119,9 @@ function Reader() {
     setShowTafsir((v) => !v)
     if (!tafsir) { try { setTafsir(await loadTafsir()) } catch { setMsg('التفسير غير متاح الآن') } }
   }
-  const share = async () => {
+  const share = async (light = false) => {
     if (!activeEntry) return
-    const r = await shareVerseImage({ text: `${activeEntry.ayah.text}`, surahName: activeEntry.surah.name.replace('سُورَةُ ', ''), ayah: activeEntry.ayah.numberInSurah })
+    const r = await shareVerseImage({ text: `${activeEntry.ayah.text}`, surahName: activeEntry.surah.name.replace('سُورَةُ ', ''), ayah: activeEntry.ayah.numberInSurah, light })
     setMsg(r === 'downloaded' ? 'تم تحميل صورة الآية' : '')
   }
   const surahStartPage = (n: number) => surahs[n - 1]?.ayahs[0].page || 1
@@ -172,7 +172,8 @@ function Reader() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button onClick={openTafsir} className={btn}><MessageSquareText className="size-4" aria-hidden="true" />{showTafsir ? 'إخفاء التفسير' : 'التفسير'}</button>
           <button onClick={() => toggleBm({ key: `ayah-${active}`, type: 'ayah', surah: activeEntry.surah.number, surahName: activeEntry.surah.name, ayah: activeEntry.ayah.numberInSurah, text: activeEntry.ayah.text, page })} className={btn}><Star className="size-4" fill={isBm(`ayah-${active}`) ? 'currentColor' : 'none'} aria-hidden="true" />{isBm(`ayah-${active}`) ? 'إزالة العلامة' : 'حفظ علامة'}</button>
-          <button onClick={share} className={btn}><ImageIcon className="size-4" aria-hidden="true" />مشاركة كصورة</button>
+          <button onClick={() => share(false)} className={btn}><ImageIcon className="size-4" aria-hidden="true" />مشاركة كصورة</button>
+          <button onClick={() => share(true)} className={btn}><ImageIcon className="size-4" aria-hidden="true" />صورة فاتحة</button>
         </div>
         {showTafsir && <p className="mt-3 leading-8 text-[#243a32]">{tafsir ? tafsir[activeEntry.surah.number - 1][activeEntry.ayah.numberInSurah - 1] : 'جاري تحميل التفسير...'}<span className="mt-2 block text-xs text-[#718878]">التفسير الميسر، مجمع الملك فهد لطباعة المصحف الشريف</span></p>}
       </section>}
