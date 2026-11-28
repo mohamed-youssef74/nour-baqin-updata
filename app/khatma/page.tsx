@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { BookOpen, Minus, Plus, RotateCcw } from 'lucide-react'
 import { PageShell } from '@/components/site-header'
+import { KhatmaStats } from '@/components/khatma-stats'
 import { useNourStorage } from '@/lib/use-nour-storage'
 import { disablePush, localDate, pushSupported, refreshPush, sendTestPush, syncPush } from '@/lib/push-client'
 
@@ -59,6 +60,7 @@ export default function KhatmaPage() {
         <p className="mt-1 text-sm text-[#557165]">بهذا الورد تختم القرآن خلال {daysLeft} يومًا تقريبًا.</p>
         <div className="mt-6 border-t border-[#d8b66c]/40 pt-5"><label className="flex cursor-pointer items-center justify-center gap-3 font-bold"><input type="checkbox" checked={rem.enabled} onChange={(e) => saveRem({ ...rem, enabled: e.target.checked })} className="size-5 accent-[#183d35]" />تذكير بالورد اليومي</label>{rem.enabled && <label className="mt-3 block text-sm">وقت التذكير <input type="time" value={rem.time} onChange={(e) => saveRem({ ...rem, time: e.target.value })} className="mr-2 rounded-xl border border-[#d8b66c] px-3 py-1" /></label>}<p className="mt-2 text-xs text-[#718878]">{pushState === 'on' ? 'التذكير يصل حتى والتطبيق مغلق، إن لم تكن قرأت وردك بعد.' : pushState === 'denied' ? 'الإشعارات محظورة من إعدادات المتصفح، فعّلها ثم أعد المحاولة.' : pushState === 'unsupported' ? 'هذا المتصفح لا يدعم التنبيهات خارج التطبيق، سيظهر التذكير والتطبيق مفتوح.' : pushState === 'error' ? 'تعذر تفعيل التنبيه خارج التطبيق الآن، سيظهر التذكير والتطبيق مفتوح.' : 'يظهر التذكير والتطبيق مفتوح، إن لم تكن قرأت وردك بعد.'}</p>{rem.enabled && pushState === 'on' && <button onClick={async () => setPushState((await sendTestPush()) ? 'on' : 'error')} className="mt-2 rounded-full border border-[#d8b66c] px-4 py-1 text-xs font-bold">جرّب التنبيه الآن</button>}</div>
       </div>
+      <KhatmaStats page={khatmaPage} goal={wird.goal} />
     </section>
   </PageShell>
 }
