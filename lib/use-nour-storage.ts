@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { recordMove } from './khatma-log'
 import type { DailyStat, SavedBookmark, SavedFavorite } from './content'
 
 const readJson = <T,>(key: string, fallback: T): T => {
@@ -19,7 +20,9 @@ export function useNourStorage() {
   const [favorites, setFavorites] = useState<SavedFavorite[]>([])
   const [bookmarks, setBookmarks] = useState<SavedBookmark[]>([])
   const [stats, setStats] = useState<DailyStat[]>([])
-  const [khatmaPage, setKhatmaPage] = useState(1)
+  const [khatmaPage, setKhatmaPageRaw] = useState(1)
+  const pageRef = useRef(1)
+  const setKhatmaPage = useCallback((n: number) => { recordMove(pageRef.current, n); pageRef.current = n; setKhatmaPageRaw(n) }, [])
   const [reminders, setReminders] = useState({ adhkar: true, prayer: true, time: '08:00' })
 
   useEffect(() => {
@@ -27,7 +30,8 @@ export function useNourStorage() {
     setFavorites(readJson('nour-favorites', []))
     setBookmarks(readJson('nour-bookmarks', []))
     setStats(readJson('nour-daily-stats', []))
-    setKhatmaPage(readJson('nour-khatma-page', 1))
+    pageRef.current = readJson('nour-khatma-page', 1)
+    setKhatmaPageRaw(pageRef.current)
     setReminders(readJson('nour-reminders', { adhkar: true, prayer: true, time: '08:00' }))
     setReady(true)
   }, [])
