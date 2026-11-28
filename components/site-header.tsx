@@ -39,7 +39,8 @@ export function SiteHeader() {
     navigator.serviceWorker?.register('/sw.js').catch(() => undefined)
     const standalone = window.matchMedia('(display-mode: standalone)').matches ||
       'standalone' in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
-    setIsInstalled(standalone)
+    const inApp = document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: minimal-ui)').matches
+    setIsInstalled(standalone || inApp)
 
     const handleBeforeInstall = (event: Event) => {
       event.preventDefault()
